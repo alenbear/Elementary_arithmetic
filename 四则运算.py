@@ -2,6 +2,7 @@ import random
 from fractions import Fraction
 import tkinter as tk
 from tkinter import scrolledtext
+from tkinter import messagebox
 
 # 将假分数转换为真分数的格式化函数
 def format_fraction(fraction):
@@ -29,11 +30,22 @@ def generate_sub_expression(max_range):
         denominator = random.randint(1, max_range - 1)
     return Fraction(numerator, denominator)
 
-# 生成复合表达式，并确保结果正确
+"""  
+    生成一个包含随机子表达式和运算符的复合表达式，并计算其结果。  
+  
+    参数:  
+    max_range (int): 子表达式中数字（分子和分母）的最大范围（包括边界）。  
+  
+    返回:  
+    tuple: 包含两个元素的元组。  
+        - 第一个元素是格式化后的复合表达式字符串。  
+        - 第二个元素是表达式计算结果的混合分数表示。  
+"""  
 def generate_complex_expression(max_range):
-    num_sub_expressions = random.randint(3, 4)
-    expressions = []
-    results = []
+   
+    num_sub_expressions = random.randint(3, 4)  # 随机生成子表达式的数量  
+    expressions = []  # 存储生成的子表达式（Fraction对象）  
+    results = []     #存储生成的结果
 
     # 生成子表达式
     for _ in range(num_sub_expressions):
@@ -58,7 +70,7 @@ def generate_complex_expression(max_range):
 
     for i in range(1, len(combined_expression)):
         if isinstance(combined_expression[i], str):  # 如果是运算符
-            if combined_expression[i] in ['*', '/']:
+            if combined_expression[i] in ['*', '/']: # 乘法和除法
                 if combined_expression[i] == '*':
                     current_value *= combined_expression[i + 1]
                 elif combined_expression[i] == '/':
@@ -80,14 +92,15 @@ def generate_complex_expression(max_range):
 
     # 格式化输出
     formatted_expression = []
-    for item in combined_expression:
-        if isinstance(item, Fraction):
+    for item in combined_expression:  
+        if isinstance(item, Fraction): # 元素是Fraction类型（即分数）  
             formatted_expression.append(format_fraction(item))
         else:
             formatted_expression.append(item)
 
-    final_expression = " ".join(map(str, formatted_expression))
-    final_expression = final_expression.replace('*', '×').replace(' / ', ' ÷ ')
+    final_expression = " ".join(map(str, formatted_expression)) # 使用map函数将formatted_expression列表中的每个元素转换为字符串，并使用" ".join()方法将它们连接成一个字符串
+ 
+    final_expression = final_expression.replace('*', '×').replace(' / ', ' ÷ ')  #替换字符串中的'*'为'×'，' / '为' ÷ '，使表达式更易于阅读
     final_result_as_mixed = format_fraction(final_result)
 
     return final_expression, final_result_as_mixed
@@ -128,28 +141,68 @@ def create_gui():
     questions = []
     answers = []
 
-    def show_questions():
-        num_questions = int(num_entry.get())
-        max_range = int(range_entry.get())
-        nonlocal questions, answers
-        questions, answers = generate_questions(num_questions, max_range)
+    # def show_questions():
+    #     num_questions = int(num_entry.get())
+    #     max_range = int(range_entry.get())
+    #     nonlocal questions, answers
+    #     questions, answers = generate_questions(num_questions, max_range)
 
-        question_window = tk.Toplevel(window)
-        question_window.title("生成的题目")
+    #     question_window = tk.Toplevel(window)
+    #     question_window.title("生成的题目")
 
-        text_area = scrolledtext.ScrolledText(question_window, width=100, height=20)
-        text_area.pack()
-        for i, q in enumerate(questions):
-            text_area.insert(tk.END, f"{i + 1}. {q}\n")
+    #     text_area = scrolledtext.ScrolledText(question_window, width=100, height=20)
+    #     text_area.pack()
+    #     for i, q in enumerate(questions):
+    #         text_area.insert(tk.END, f"{i + 1}. {q}\n")
 
-    def show_answers():
-        answer_window = tk.Toplevel(window)
-        answer_window.title("生成的答案")
+    # def show_answers():
+    #     answer_window = tk.Toplevel(window)
+    #     answer_window.title("生成的答案")
 
-        text_area = scrolledtext.ScrolledText(answer_window, width=50, height=20)
-        text_area.pack()
-        for i, a in enumerate(answers):
-            text_area.insert(tk.END, f"{i + 1}. {a}\n")
+    #     text_area = scrolledtext.ScrolledText(answer_window, width=50, height=20)
+    #     text_area.pack()
+    #     for i, a in enumerate(answers):
+    #         text_area.insert(tk.END, f"{i + 1}. {a}\n")
+
+
+    def show_questions():  
+        num_questions = num_entry.get().strip()  
+        max_range = range_entry.get().strip()  
+          
+        if not num_questions or not max_range:  
+            messagebox.showerror("错误", "请确保输入了题目数量和范围。")  
+            return  
+          
+        try:  
+            num_questions = int(num_questions)  
+            max_range = int(max_range)  
+        except ValueError:  
+            messagebox.showerror("错误", "请确保输入的是有效的整数。")  
+            return  
+      
+        nonlocal questions, answers  
+        questions, answers = generate_questions(num_questions, max_range)  
+      
+        question_window = tk.Toplevel(window)  
+        question_window.title("生成的题目")  
+      
+        text_area = scrolledtext.ScrolledText(question_window, width=100, height=20)  
+        text_area.pack()  
+        for i, q in enumerate(questions):  
+            text_area.insert(tk.END, f"{i + 1}. {q}\n")  
+  
+    def show_answers():  
+        if not answers:  
+            messagebox.showerror("错误", "请先生成题目以查看答案。")  
+            return  
+      
+        answer_window = tk.Toplevel(window)  
+        answer_window.title("生成的答案")  
+      
+        text_area = scrolledtext.ScrolledText(answer_window, width=50, height=20)  
+        text_area.pack()  
+        for i, a in enumerate(answers):  
+            text_area.insert(tk.END, f"{i + 1}. {a}\n")         
 
     tk.Button(window, text="显示题目", command=show_questions).pack(pady=10)
     tk.Button(window, text="显示答案", command=show_answers).pack(pady=10)
